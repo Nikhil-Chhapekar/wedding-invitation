@@ -34,70 +34,75 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ==========================================================================
-     0. FULL-SCREEN INTERACTIVE INTRO VIDEO GATE
+     0. MOBILE-SAFE INTRO VIDEO GATE
+     The invitation must remain accessible if an external video is slow or blocked.
      ========================================================================== */
   const videoIntroOverlay = document.getElementById('videoIntroOverlay');
   const introVideo = document.getElementById('introVideo');
+  const skipIntroBtn = document.getElementById('skipIntroBtn');
 
   if (videoIntroOverlay && introVideo) {
     let isIntroClosed = false;
-    let isVideoStarted = false;
+    let hasVideoPlayed = false;
+    let watchdogTimer;
 
-    // Lock page scrolling while intro overlay is active
     document.body.classList.add('intro-active');
     document.body.style.overflow = 'hidden';
 
-    // Function to gracefully close overlay and reveal website
     function closeIntroVideo() {
       if (isIntroClosed) return;
       isIntroClosed = true;
-
-      // Start 0.8s CSS transition fade out
+      if (watchdogTimer) clearTimeout(watchdogTimer);
       videoIntroOverlay.classList.add('fade-out');
 
       setTimeout(() => {
         videoIntroOverlay.style.display = 'none';
         videoIntroOverlay.style.pointerEvents = 'none';
         document.body.classList.remove('intro-active');
-        document.body.style.overflow = 'auto';
-
-        // Pause video to ensure audio / processing stops
-        try {
-          introVideo.pause();
-        } catch (err) {}
-      }, 800);
+        document.body.style.overflow = '';
+        try { introVideo.pause(); } catch (err) {}
+      }, 350);
     }
 
-    // Tap/Click anywhere on screen to start video with full sound enabled
     function handleOverlayTap() {
-      if (isIntroClosed) return;
-
-      // Start playing with audio on first tap
-      if (!isVideoStarted || introVideo.paused) {
-        isVideoStarted = true;
-
+      if (isIntroClosed || hasVideoPlayed) return;
+      try {
+        // Only request the remote video after an intentional user tap.
+        introVideo.load();
         introVideo.muted = false;
         const playPromise = introVideo.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn('Playback error or gesture requirement:', err);
-            introVideo.play().catch(() => {});
-          });
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(() => closeIntroVideo());
         }
+      } catch (err) {
+        closeIntroVideo();
       }
     }
 
-    // Click / Touch listener on overlay
     videoIntroOverlay.addEventListener('click', handleOverlayTap);
+    if (skipIntroBtn) {
+      skipIntroBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        closeIntroVideo();
+      });
+    }
 
-    // Listen for video completion: smoothly reveal website
-    introVideo.addEventListener('ended', closeIntroVideo);
-
-    // Video error fallback: if network fails or video cannot load, tap reveals website
-    introVideo.addEventListener('error', () => {
-      console.warn('Video failed to load, tap reveals website');
-      videoIntroOverlay.addEventListener('click', closeIntroVideo, { once: true });
+    introVideo.addEventListener('playing', () => {
+      hasVideoPlayed = true;
+      const prompt = videoIntroOverlay.querySelector('.intro-prompt');
+      if (prompt) prompt.textContent = 'Enjoy the invitation · Skip anytime';
     });
+    introVideo.addEventListener('ended', closeIntroVideo);
+    introVideo.addEventListener('error', closeIntroVideo);
+    introVideo.addEventListener('abort', () => {
+      if (!hasVideoPlayed) closeIntroVideo();
+    });
+
+    // Fail-safe: don't let a stalled remote video trap visitors on iPhone.
+    watchdogTimer = setTimeout(() => {
+      if (!hasVideoPlayed) closeIntroVideo();
+    }, 8000);
   }
 
   /* ==========================================================================
@@ -120,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       // Create Rose Gold Shimmer Metallic Gradient
       const grad = ctx.createLinearGradient(0, 0, rect.width, rect.height);
