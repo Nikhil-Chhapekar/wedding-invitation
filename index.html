@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Rahul & Richa — Wedding Invitation</title>
   <meta name="description" content="You are cordially invited to celebrate the wedding reception of Rahul and Richa. November 21, 2026." />
   
@@ -23,11 +23,15 @@
        FULL-SCREEN INTERACTIVE INTRO VIDEO GATE
        ======================================================== -->
   <div id="videoIntroOverlay" class="video-intro-overlay" role="dialog" aria-label="Wedding Invitation Intro Video">
-    <!-- HTML5 Video Player -->
-    <video id="introVideo" class="intro-video" playsinline preload="auto">
+    <!-- Load the intro video only when requested to avoid blocking mobile page load. -->
+    <video id="introVideo" class="intro-video" playsinline webkit-playsinline preload="none">
       <source src="https://www.image2url.com/r2/default/videos/1790852378301-0a8e8c18-7782-4d1f-94e2-25c3e4e8e3e1.mp4" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
+    <div class="intro-actions">
+      <p class="intro-prompt">Tap to play your wedding invitation</p>
+      <button id="skipIntroBtn" class="skip-intro-btn" type="button">Skip Intro <span aria-hidden="true">→</span></button>
+    </div>
   </div>
 
   <!-- Floating Audio & Ambient Controls -->
@@ -480,7 +484,7 @@
         <!-- Event 1: Mehendi -->
         <div class="prewedding-card royal-card reveal-on-scroll delay-1">
           <div class="prewedding-img-wrapper">
-            <img src="assets/mehendi.jpg" alt="Mehendi Ceremony" class="prewedding-img" loading="lazy">
+            <img src="assets/mehendi.webp" alt="Mehendi Ceremony" class="prewedding-img" loading="lazy" decoding="async" width="1376" height="768">
           </div>
           <div class="prewedding-icon-top">
             <i class="fa-solid fa-hand-holding-heart"></i>
@@ -512,7 +516,7 @@
         <!-- Event 2: Haldi -->
         <div class="prewedding-card royal-card reveal-on-scroll delay-2">
           <div class="prewedding-img-wrapper">
-            <img src="assets/haldi.jpg" alt="Haldi Ceremony" class="prewedding-img" loading="lazy">
+            <img src="assets/haldi.webp" alt="Haldi Ceremony" class="prewedding-img" loading="lazy" decoding="async" width="1376" height="768">
           </div>
           <div class="prewedding-icon-top">
             <i class="fa-solid fa-sun"></i>
@@ -544,7 +548,7 @@
         <!-- Event 3: Sangeet -->
         <div class="prewedding-card royal-card reveal-on-scroll delay-3">
           <div class="prewedding-img-wrapper">
-            <img src="assets/sangeet.jpg" alt="Sangeet Night" class="prewedding-img" loading="lazy">
+            <img src="assets/sangeet.webp" alt="Sangeet Night" class="prewedding-img" loading="lazy" decoding="async" width="1376" height="768">
           </div>
           <div class="prewedding-icon-top">
             <i class="fa-solid fa-guitar"></i>
