@@ -321,7 +321,7 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  cursor: pointer;
+  cursor: default;
   opacity: 1;
   visibility: visible;
   transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s ease;

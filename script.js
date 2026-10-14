@@ -34,8 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ==========================================================================
-     0. STARTUP INTRO VIDEO
-     Start muted for browser autoplay compatibility; tapping enables sound.
+     0. TAP-TO-START INTRO VIDEO
+     Keep the opening frame visible until the visitor taps it.
      ========================================================================== */
      const videoIntroOverlay = document.getElementById('videoIntroOverlay');
      const introVideo = document.getElementById('introVideo');
@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (videoIntroOverlay && introVideo) {
     let isIntroOpen = false;
+    let hasVideoStarted = false;
     let hasVideoPlayed = false;
     let watchdogTimer = null;
 
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openIntroVideo() {
       if (isIntroOpen) return;
       isIntroOpen = true;
+      hasVideoStarted = false;
       hasVideoPlayed = false;
       videoIntroOverlay.classList.remove('fade-out');
       videoIntroOverlay.style.display = 'flex';
@@ -73,6 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       introVideo.currentTime = 0;
       introVideo.muted = true;
+      introVideo.pause();
+    }
+
+    function startIntroVideo() {
+      if (!isIntroOpen || hasVideoStarted) return;
+      hasVideoStarted = true;
       const playPromise = introVideo.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(closeIntroVideo);
@@ -83,19 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 15000);
     }
 
-    function handleOverlayTap() {
-      if (!hasVideoPlayed) {
-        introVideo.muted = false;
-        introVideo.play().catch(closeIntroVideo);
-      } else if (introVideo.muted) {
-        introVideo.muted = false;
-      }
-    }
+    videoIntroOverlay.addEventListener('click', startIntroVideo);
 
     if (watchIntroBtn) {
       watchIntroBtn.addEventListener('click', openIntroVideo);
     }
-    videoIntroOverlay.addEventListener('click', handleOverlayTap);
 
     introVideo.addEventListener('playing', () => {
       hasVideoPlayed = true;
