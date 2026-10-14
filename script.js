@@ -46,6 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let hasVideoStarted = false;
     let hasVideoPlayed = false;
     let watchdogTimer = null;
+    const tapToOpenFrameTime = 1.1;
+
+    function showTapToOpenFrame() {
+      if (introVideo.duration > tapToOpenFrameTime) {
+        introVideo.currentTime = tapToOpenFrameTime;
+      }
+    }
 
     function closeIntroVideo() {
       if (!isIntroOpen) return;
@@ -73,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.add('intro-active');
       document.body.style.overflow = 'hidden';
 
-      introVideo.currentTime = 0;
       introVideo.muted = true;
       introVideo.pause();
+      showTapToOpenFrame();
     }
 
     function startIntroVideo() {
@@ -83,7 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
       hasVideoStarted = true;
       const playPromise = introVideo.play();
       if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(closeIntroVideo);
+        playPromise.catch(() => {
+          hasVideoStarted = false;
+        });
       }
 
       watchdogTimer = setTimeout(() => {
@@ -100,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('playing', () => {
       hasVideoPlayed = true;
     });
+    introVideo.addEventListener('loadedmetadata', showTapToOpenFrame, { once: true });
 
     introVideo.addEventListener('ended', closeIntroVideo);
     introVideo.addEventListener('error', () => {
