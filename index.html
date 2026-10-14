@@ -23,8 +23,8 @@
        FULL-SCREEN INTERACTIVE INTRO VIDEO GATE
        ======================================================== -->
   <div id="videoIntroOverlay" class="video-intro-overlay" role="dialog" aria-label="Wedding Invitation Intro Video">
-    <!-- Load the intro video only when requested to avoid blocking mobile page load. -->
-    <video id="introVideo" class="intro-video" playsinline webkit-playsinline preload="none">
+    <video id="introVideo" class="intro-video" playsinline webkit-playsinline autoplay muted preload="metadata">
+      <source src="https://www.image2url.com/r2/default/videos/1791974992393-b828f01c-669a-40fd-b996-2a8302b2dcb4.webm" type="video/webm">
       <source src="https://www.image2url.com/r2/default/videos/1790852378301-0a8e8c18-7782-4d1f-94e2-25c3e4e8e3e1.mp4" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
@@ -36,6 +36,10 @@
 
   <!-- Floating Audio & Ambient Controls -->
   <div class="floating-controls" aria-label="Audio and Effects Controls">
+    <button id="watchIntroBtn" class="control-btn" title="Watch Wedding Invitation Video" aria-label="Watch wedding invitation video">
+      <i class="fa-solid fa-play"></i>
+      <span class="btn-label">Video</span>
+    </button>
     <button id="musicToggleBtn" class="control-btn" title="Play / Pause Royal Instrumental" aria-label="Toggle background music">
       <i class="fa-solid fa-music"></i>
       <span class="btn-label">Music</span>

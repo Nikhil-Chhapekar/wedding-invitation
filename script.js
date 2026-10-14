@@ -34,24 +34,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ==========================================================================
-     0. MOBILE-SAFE INTRO VIDEO GATE
-     The invitation must remain accessible if an external video is slow or blocked.
+     0. STARTUP INTRO VIDEO
+     Start muted for browser autoplay compatibility; tapping enables sound.
      ========================================================================== */
   const videoIntroOverlay = document.getElementById('videoIntroOverlay');
   const introVideo = document.getElementById('introVideo');
   const skipIntroBtn = document.getElementById('skipIntroBtn');
+  const watchIntroBtn = document.getElementById('watchIntroBtn');
 
   if (videoIntroOverlay && introVideo) {
-    let isIntroClosed = false;
+    let isIntroOpen = false;
     let hasVideoPlayed = false;
-    let watchdogTimer;
-
-    document.body.classList.add('intro-active');
-    document.body.style.overflow = 'hidden';
+    let watchdogTimer = null;
 
     function closeIntroVideo() {
-      if (isIntroClosed) return;
-      isIntroClosed = true;
+      if (!isIntroOpen) return;
+      isIntroOpen = false;
       if (watchdogTimer) clearTimeout(watchdogTimer);
       videoIntroOverlay.classList.add('fade-out');
 
@@ -64,21 +62,51 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 350);
     }
 
-    function handleOverlayTap() {
-      if (isIntroClosed || hasVideoPlayed) return;
-      try {
-        // Only request the remote video after an intentional user tap.
-        introVideo.load();
+    function openIntroVideo() {
+      if (isIntroOpen) return;
+      isIntroOpen = true;
+      hasVideoPlayed = false;
+      videoIntroOverlay.classList.remove('fade-out');
+      videoIntroOverlay.style.display = 'flex';
+      videoIntroOverlay.style.pointerEvents = 'auto';
+      document.body.classList.add('intro-active');
+      document.body.style.overflow = 'hidden';
+
+      introVideo.currentTime = 0;
+      introVideo.muted = true;
+      const playPromise = introVideo.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          const prompt = videoIntroOverlay.querySelector('.intro-prompt');
+          if (prompt) prompt.textContent = 'Tap to play your wedding invitation';
+        });
+      }
+
+      watchdogTimer = setTimeout(() => {
+        if (!hasVideoPlayed) closeIntroVideo();
+      }, 15000);
+    }
+
+    function handleOverlayTap(event) {
+      if (event.target === skipIntroBtn) {
+        return;
+      }
+      if (!hasVideoPlayed) {
         introVideo.muted = false;
-        const playPromise = introVideo.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch(() => closeIntroVideo());
-        }
-      } catch (err) {
-        closeIntroVideo();
+        introVideo.play().catch(() => {
+          const prompt = videoIntroOverlay.querySelector('.intro-prompt');
+          if (prompt) prompt.textContent = 'Tap Skip Intro to continue';
+        });
+      } else if (introVideo.muted) {
+        introVideo.muted = false;
+        const prompt = videoIntroOverlay.querySelector('.intro-prompt');
+        if (prompt) prompt.textContent = 'Enjoy the invitation · Skip anytime';
       }
     }
 
+    if (watchIntroBtn) {
+      watchIntroBtn.addEventListener('click', openIntroVideo);
+    }
     videoIntroOverlay.addEventListener('click', handleOverlayTap);
     if (skipIntroBtn) {
       skipIntroBtn.addEventListener('click', (event) => {
@@ -91,18 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('playing', () => {
       hasVideoPlayed = true;
       const prompt = videoIntroOverlay.querySelector('.intro-prompt');
-      if (prompt) prompt.textContent = 'Enjoy the invitation · Skip anytime';
-    });
-    introVideo.addEventListener('ended', closeIntroVideo);
-    introVideo.addEventListener('error', closeIntroVideo);
-    introVideo.addEventListener('abort', () => {
-      if (!hasVideoPlayed) closeIntroVideo();
+      if (prompt) prompt.textContent = 'Tap for sound · Skip anytime';
     });
 
-    // Fail-safe: don't let a stalled remote video trap visitors on iPhone.
-    watchdogTimer = setTimeout(() => {
-      if (!hasVideoPlayed) closeIntroVideo();
-    }, 8000);
+    introVideo.addEventListener('ended', closeIntroVideo);
+    introVideo.addEventListener('error', () => {
+      if (!hasVideoPlayed) {
+        closeIntroVideo();
+      }
+    });
+    openIntroVideo();
   }
 
   /* ==========================================================================
