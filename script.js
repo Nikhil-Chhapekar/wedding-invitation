@@ -37,10 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
      0. STARTUP INTRO VIDEO
      Start muted for browser autoplay compatibility; tapping enables sound.
      ========================================================================== */
-  const videoIntroOverlay = document.getElementById('videoIntroOverlay');
-  const introVideo = document.getElementById('introVideo');
-  const skipIntroBtn = document.getElementById('skipIntroBtn');
-  const watchIntroBtn = document.getElementById('watchIntroBtn');
+     const videoIntroOverlay = document.getElementById('videoIntroOverlay');
+     const introVideo = document.getElementById('introVideo');
+     const watchIntroBtn = document.getElementById('watchIntroBtn');
 
   if (videoIntroOverlay && introVideo) {
     let isIntroOpen = false;
@@ -76,10 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       introVideo.muted = true;
       const playPromise = introVideo.play();
       if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch(() => {
-          const prompt = videoIntroOverlay.querySelector('.intro-prompt');
-          if (prompt) prompt.textContent = 'Tap to play your wedding invitation';
-        });
+        playPromise.catch(closeIntroVideo);
       }
 
       watchdogTimer = setTimeout(() => {
@@ -87,20 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 15000);
     }
 
-    function handleOverlayTap(event) {
-      if (event.target === skipIntroBtn) {
-        return;
-      }
+    function handleOverlayTap() {
       if (!hasVideoPlayed) {
         introVideo.muted = false;
-        introVideo.play().catch(() => {
-          const prompt = videoIntroOverlay.querySelector('.intro-prompt');
-          if (prompt) prompt.textContent = 'Tap Skip Intro to continue';
-        });
+        introVideo.play().catch(closeIntroVideo);
       } else if (introVideo.muted) {
         introVideo.muted = false;
-        const prompt = videoIntroOverlay.querySelector('.intro-prompt');
-        if (prompt) prompt.textContent = 'Enjoy the invitation · Skip anytime';
       }
     }
 
@@ -108,18 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
       watchIntroBtn.addEventListener('click', openIntroVideo);
     }
     videoIntroOverlay.addEventListener('click', handleOverlayTap);
-    if (skipIntroBtn) {
-      skipIntroBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        closeIntroVideo();
-      });
-    }
 
     introVideo.addEventListener('playing', () => {
       hasVideoPlayed = true;
-      const prompt = videoIntroOverlay.querySelector('.intro-prompt');
-      if (prompt) prompt.textContent = 'Tap for sound · Skip anytime';
     });
 
     introVideo.addEventListener('ended', closeIntroVideo);
