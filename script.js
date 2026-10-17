@@ -46,13 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let hasVideoStarted = false;
     let hasVideoPlayed = false;
     let watchdogTimer = null;
-    const tapToOpenFrameTime = 1.1;
-
-    function showTapToOpenFrame() {
-      if (introVideo.duration > tapToOpenFrameTime) {
-        introVideo.currentTime = tapToOpenFrameTime;
-      }
-    }
 
     function closeIntroVideo() {
       if (!isIntroOpen) return;
@@ -82,7 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       introVideo.muted = true;
       introVideo.pause();
-      showTapToOpenFrame();
+      if (introVideo.readyState > 0) {
+        introVideo.currentTime = 0;
+      }
     }
 
     function startIntroVideo() {
@@ -109,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('playing', () => {
       hasVideoPlayed = true;
     });
-    introVideo.addEventListener('loadedmetadata', showTapToOpenFrame, { once: true });
 
     introVideo.addEventListener('ended', closeIntroVideo);
     introVideo.addEventListener('error', () => {
