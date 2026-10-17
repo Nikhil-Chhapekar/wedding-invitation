@@ -83,6 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function startIntroVideo() {
       if (!isIntroOpen || hasVideoStarted) return;
       hasVideoStarted = true;
+      if (introVideo.readyState > 0) {
+        introVideo.currentTime = 0;
+      }
       const playPromise = introVideo.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise.catch(() => {
